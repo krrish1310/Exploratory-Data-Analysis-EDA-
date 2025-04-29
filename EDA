@@ -1,0 +1,84 @@
+# Step 1: Import necessary libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import warnings
+
+# Ignore deprecation and future warnings
+warnings.filterwarnings("ignore")
+
+# Step 2: Load the dataset
+df = pd.read_excel("Titanic-Dataset.csv.xls")
+print("✅ Dataset Loaded")
+
+# Step 3: Summary Statistics
+print("\n📊 Summary Statistics:")
+display(df.describe(include='all'))
+
+# Step 4: Check Data Info and Missing Values
+print("\n🧾 Data Info:")
+df.info()
+
+print("\n❓ Missing Values:")
+print(df.isnull().sum())
+
+# Step 5: Clean up infinite values (to avoid seaborn warnings)
+df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+# Step 6: Univariate Analysis - Histograms for numeric columns
+numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+
+plt.figure(figsize=(15, 8))
+for i, col in enumerate(numeric_cols):
+    plt.subplot(2, 4, i+1)
+    sns.histplot(df[col].dropna(), kde=True)
+    plt.title(f'Histogram of {col}')
+plt.tight_layout()
+plt.show()
+
+# Step 7: Boxplots for outlier detection
+plt.figure(figsize=(15, 8))
+for i, col in enumerate(numeric_cols):
+    plt.subplot(2, 4, i+1)
+    sns.boxplot(x=df[col])
+    plt.title(f'Boxplot of {col}')
+plt.tight_layout()
+plt.show()
+
+# Step 8: Correlation Matrix
+plt.figure(figsize=(10, 6))
+sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Correlation Matrix")
+plt.show()
+
+# Step 9: Pairplot for feature relationships
+sns.pairplot(df[['Survived', 'Pclass', 'Age', 'Fare']].dropna(), hue='Survived', palette='Set1')
+plt.suptitle("Pairplot of Key Features", y=1.02)
+plt.show()
+
+# Step 10: Categorical Feature Analysis (Fixed hue issue)
+df_plot = df.copy()
+df_plot['Survived'] = df_plot['Survived'].map({0: 'Died', 1: 'Survived'})
+
+# Sex vs Survival
+plt.figure(figsize=(12, 5))
+sns.countplot(data=df_plot, x='Sex', hue='Survived', palette='Set2')
+plt.title("Survival Count by Sex")
+plt.xlabel("Sex")
+plt.ylabel("Count")
+plt.legend(title="Survival Status")
+plt.show()
+
+# Pclass vs Survival
+plt.figure(figsize=(12, 5))
+sns.countplot(data=df_plot, x='Pclass', hue='Survived', palette='Set2')
+plt.title("Survival Count by Passenger Class")
+plt.xlabel("Passenger Class")
+plt.ylabel("Count")
+plt.legend(title="Survival Status")
+plt.show()
+
+# Step 11: Skewness Detection
+print("\n📈 Skewness of Numerical Features:")
+print(df[numeric_cols].skew())
